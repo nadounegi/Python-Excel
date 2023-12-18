@@ -1,5 +1,7 @@
+from asyncio.windows_events import INFINITE
 from cProfile import label
 from logging import root
+import symtable
 import tkinter as tk
 import openpyxl as excel
 
@@ -18,8 +20,55 @@ def get_selected_sya():
     return selected_sya
 
 
+def sya_no():
+    syas = ["相沢　沙希", "生田　真一", "井川　春子", "木村　かえ", "近藤　春香"]
+    for i in range(len(syas)):
+        if syas[i] == selected_sya:
+            sya_no = 100 + int(i)
+            i += 1
+            return sya_no
+
+
+def caculate_salary():
+    # 時間内給与
+    base_slary = hw.get() * wh.get()
+    # 残業給与
+    over_time_salary = hw.get() * oh.get() * 1.2
+    # 給与合計
+    total_salary = base_slary + over_time_salary
+
+    return base_slary, over_time_salary, total_salary
+
+
 def click_btn():
     book = excel.load_workbook("第九回/kyuyo.xlsx")
+    sheet_sya = get_selected_sya()
+
+    if sheet_sya:
+        selectedsheet = book[sheet_sya]
+        default_sheet = book["給与一覧"]
+
+        # 開始行を取得
+        min_row = 3
+        while selectedsheet.cell(row=min_row, column=1).value != None:
+            min_row += 1
+
+        default_min_row = 3
+        while default_sheet.cell(row=default_min_row, column=1).value != None:
+            default_min_row += 1
+
+        # データを書き込む
+        selectedsheet.cell(row=min_row, column=1).value = hw.get()
+        default_sheet.cell(row=default_min_row, column=1).value = hw.get()
+        selectedsheet.cell(row=min_row, column=2).value = wd.get()
+        default_sheet.cell(row=default_min_row, column=2).value = wd.get()
+        selectedsheet.cell(row=min_row, column=3).value = wh.get()
+        default_sheet.cell(row=default_min_row, column=3).value = wh.get()
+        selectedsheet.cell(row=min_row, column=4).value = oh.get()
+        default_sheet.cell(row=default_min_row, column=4).value = oh.get()
+
+        # Excelファイルを保存
+        book.save("第九回/kyuyo.xlsx")
 
 
 root = tk.Tk()
@@ -37,12 +86,6 @@ sya_list.set(["相沢　沙希", "生田　真一", "井川　春子", "木村�
 lb = tk.Listbox(root, height=5, listvariable=sya_list, selectmode="single")
 lb.place(x=350, y=20)
 lb.bind("<<ListboxSelect>>", show_selected)
-
-#   時給入力欄
-hw_lb = tk.Label(root, text="時給", font=("New Times Roman", 12, "bold"))
-hw_lb.place(x=235, y=260)
-hw = tk.Entry(width=15)
-hw.place(x=280, y=260)
 
 # 勤務日入力欄
 wd_lb = tk.Label(root, text="勤務日", font=("New Times Roman", 12, "bold"))

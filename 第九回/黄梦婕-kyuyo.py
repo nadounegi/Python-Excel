@@ -32,28 +32,36 @@ def sya_no():
 
     
 def caculate_salary():
-    # 時間内給与
-    base_slary =int(wh.get()) *int(hw.get())
-    # 給与合計
-    total_salary = base_slary + int(ow.get())
+    hourly_wage = float(hw.get())
+    working_hours = int(wh.get())
+    overtime_hours = int(oh.get())
 
-    return base_slary, total_salary
+    # 计算时间内工资
+    base_salary = hourly_wage * working_hours
+
+    # 计算残業代
+    overtime_salary = hourly_wage * 1.2 * overtime_hours
+
+    # 计算总工资
+    total_salary = base_salary + overtime_salary
+
+    return base_salary, total_salary, overtime_salary
 
 info = []
 
 def click_btn():
-    base_salary,total_salary = caculate_salary()
-    sya_number = sya_no()  # 获取sya_no函数的返回值
+    base_salary, total_salary, overtime_salary = caculate_salary()  # 接收三个返回值
+    sya_number = sya_no()
 
     info.append({
-'       sya_number': sya_number,
+        'sya_number': sya_number,
         'selected_sya': get_selected_sya(),
         'hw': hw.get(),
         'wd': wd.get(),
         'wh': wh.get(),
         'base_salary': base_salary,
         'oh': oh.get(),
-        'ow': ow.get(),
+        'overtime_salary': overtime_salary,
         'total_salary': total_salary
     })
 
@@ -91,26 +99,25 @@ def click_btn():
         selectedsheet.cell(row=min_row, column=6).value = wh.get()
         default_sheet.cell(row=default_min_row, column=6).value = wh.get()
         #時間内給与
-        base_salary, total_salary = caculate_salary()
         selectedsheet.cell(row=min_row, column=7).value = base_salary
         default_sheet.cell(row=default_min_row, column=7).value = base_salary
         #残業時間
         overtime_hours = float(oh.get())
         selectedsheet.cell(row=min_row, column=8).value = overtime_hours
         default_sheet.cell(row=default_min_row, column=8).value = overtime_hours
-        #残業時間が3時間を超えたら赤色にする
+          #残業時間が3時間を超えたら赤色にする
         if overtime_hours >= 3:
-             red_fill = PatternFill(start_color="FFFF0000", end_color="FFFF0000", fill_type="solid")
-             selectedsheet.cell(row=min_row, column=8).fill = red_fill
-             default_sheet.cell(row=default_min_row, column=8).fill = red_fill
-        #残業代
-        selectedsheet.cell(row=min_row, column=9).value = ow.get()
-        default_sheet.cell(row=default_min_row, column=9).value = ow.get()
-        #給与合計
+            red_fill = PatternFill(start_color="FFFF0000", end_color="FFFF0000", fill_type="solid")
+            selectedsheet.cell(row=min_row, column=8).fill = red_fill
+            default_sheet.cell(row=default_min_row, column=8).fill = red_fill
+         #残業代計算
+        selectedsheet.cell(row=min_row, column=9).value = overtime_salary
+        default_sheet.cell(row=default_min_row, column=9).value = overtime_salary
+          #給与合計
         selectedsheet.cell(row=min_row, column=10).value = total_salary
         default_sheet.cell(row=default_min_row, column=10).value = total_salary
 
-        # Excelファイルを保存
+          # Excelファイルを保存
         book.save("第九回/kyuyo.xlsx")
 
 def set_worksheet_layout(worksheet):
@@ -185,14 +192,6 @@ oh_lb = tk.Label(root, text="残業時間", font=("New Times Roman", 12, "bold")
 oh_lb.place(x=235, y=330)
 oh = tk.Entry(width=15)
 oh.place(x=330, y=330)
-
-#残業代入力欄
-ow_lb = tk.Label(root, text="残業代", font=("New Times Roman", 12, "bold"))
-ow_lb.place(x=235, y=370)
-ow = tk.Entry(width=15)
-ow.place(x=330, y=370)
-
-
 
 # 入力ボタン
 btn = tk.Button(root, text="入力", font=("New Times Roman", 12, "bold"), command=click_btn)
